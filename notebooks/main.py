@@ -5,21 +5,10 @@
 
 from datetime import datetime
 
-# COMMAND ----------
-
-# MAGIC %run ./feature_engineering
-
-# COMMAND ----------
-
-# MAGIC %run ./training
-
-# COMMAND ----------
-
-# MAGIC %run ./mlflow_utils
-
-# COMMAND ----------
-
-# MAGIC %run ./inference
+from demo_evolution_project_structure.feature_engineering import engineer_features
+from demo_evolution_project_structure.inference import make_predictions
+from demo_evolution_project_structure.mlflow_utils import register_best_model
+from demo_evolution_project_structure.training import train
 
 # COMMAND ----------
 
@@ -76,7 +65,7 @@ data_to_predict = spark.read.option("header", "true").option("sep", ";").csv(inp
 data_to_predict = engineer_features(data_to_predict)
 
 # make predictions
-preds = make_predictions(data_to_predict, model_name)
+preds = make_predictions(data_to_predict, model_name, spark)
 
 # save predictions (proxy: just display preds)
 display(preds)
