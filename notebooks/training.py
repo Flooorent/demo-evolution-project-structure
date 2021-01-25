@@ -31,8 +31,8 @@ train(data, experiment_name, parent_run_name)
 # COMMAND ----------
 
 metric = "mse"
-register_best_model(model_name, experiment_name, parent_run_name, metric)
+model_details = register_best_model(model_name, experiment_name, parent_run_name, metric)
 
 # COMMAND ----------
 
-
+print(f"New version: {model_details.version}")

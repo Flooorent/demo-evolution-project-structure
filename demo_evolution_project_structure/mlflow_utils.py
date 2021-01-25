@@ -1,6 +1,5 @@
 import mlflow
 from mlflow.tracking import MlflowClient
-import time
 
 
 def register_best_model(model_name, experiment_name, parent_run_name, metric, order_by="ASC", model_artifact_name="model"):
@@ -39,6 +38,4 @@ def register_best_model(model_name, experiment_name, parent_run_name, metric, or
     best_model_uri = f"runs:/{best_run_from_parent_run.info.run_id}/{model_artifact_name}"
     model_details = mlflow.register_model(model_uri=best_model_uri, name=model_name)
 
-    time.sleep(5)
-
-    return client.transition_model_version_stage(model_details.name, model_details.version, stage="production", archive_existing_versions=True)
+    return model_details
