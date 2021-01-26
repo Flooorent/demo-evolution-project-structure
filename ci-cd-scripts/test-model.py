@@ -16,7 +16,7 @@
 
 # COMMAND ----------
 
-NB_VERSION = 4
+NB_VERSION = 5
 
 dbutils.widgets.text("model_name", "", "model_name")
 dbutils.widgets.text("model_version", "", "model_version")
