@@ -22,12 +22,12 @@ headers = {"Authorization": f"Bearer {args.pat}"}
 
 
 # load model version to test
-with open('./model.json') as json_file:
+with open('../model.json') as json_file:
     model_metadata = json.load(json_file)
 
 
 data = {
-  "job_id": 2,
+  "job_id": 40999,
   "notebook_params": {
     "model_name": model_metadata["model_name"],
     "model_version": model_metadata["model_version"],
