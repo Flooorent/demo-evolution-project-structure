@@ -11,6 +11,7 @@ parser = ArgumentParser(description="Workspace conf")
 
 parser.add_argument("--url", default=None, type=str, help="Workspace URL")
 parser.add_argument("--pat", default=None, type=str, help="Personal Access Token")
+parser.add_argument("--path", default=None, type=str, help="Absolute path to model metadata json file")
 
 args = parser.parse_args()
 
@@ -20,11 +21,9 @@ worskpace_url = args.url.strip("/")
 submit_url = f"{worskpace_url}/api/2.0/jobs/run-now"
 headers = {"Authorization": f"Bearer {args.pat}"}
 
-
 # load model version to test
-with open('../model.json') as json_file:
+with open(args.path) as json_file:
     model_metadata = json.load(json_file)
-
 
 data = {
   "job_id": 40999,
