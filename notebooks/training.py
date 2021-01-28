@@ -3,6 +3,9 @@ dbutils.widgets.text("input_path", "dbfs:/Users/florent.moiny@databricks.com/dem
 
 # COMMAND ----------
 
+NB_VERSION = "0.9.0"
+
+
 from datetime import datetime
 from demo_evolution_project_structure.mlflow_utils import register_best_model
 from demo_evolution_project_structure.training import train

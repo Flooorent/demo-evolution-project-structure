@@ -4,6 +4,9 @@ dbutils.widgets.text("output_path", "dbfs:/Users/florent.moiny@databricks.com/de
 
 # COMMAND ----------
 
+NB_VERSION = "0.9.0"
+
+
 from demo_evolution_project_structure.inference import make_predictions
 
 model_name = "demo-flo-evol-struct"
