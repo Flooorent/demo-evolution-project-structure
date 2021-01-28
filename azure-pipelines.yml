@@ -1,0 +1,83 @@
+# Azure Databricks Build Pipeline
+# azure-pipelines.yml
+
+trigger:
+  branches:
+    include:
+    - '*'
+  tags:
+    include:
+    - '*'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+- job: Unit_Tests
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.7'
+    inputs:
+      versionSpec: 3.7
+
+  - checkout: self
+    persistCredentials: true
+    clean: true
+
+  - script: pip install -r requirements.txt
+    displayName: 'Install python dependencies'
+
+  - script: pytest
+    displayName: 'Run Python Unit Tests for library code'
+
+# run integration tests only when on a Pull Request
+- job: Integration_Tests
+  dependsOn: Unit_Tests
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.7'
+    inputs:
+      versionSpec: 3.7
+
+  - checkout: self
+    persistCredentials: true
+    clean: true
+
+  - script: pip install databricks-cli requests
+    displayName: 'Install python dependencies'
+
+  - script: |
+      echo "[DEFAULT]" >> ~/.databrickscfg
+      echo "host = $(WORKSPACE_URL)" >> ~/.databrickscfg
+      echo "token = $(PAT)" >> ~/.databrickscfg
+    displayName: 'Set up databricks cli'
+
+  - script: |
+      databricks workspace import -o -l PYTHON $(Build.Repository.LocalPath)/ci-cd-scripts/test-model.py /Users/florent.moiny@databricks.com/demo/structure-evolution/ci-cd-staging/test-model
+    displayName: 'Copy notebooks to staging directory'
+
+  - script: python $(Build.Repository.LocalPath)/ci-cd-scripts/test-staging-model.py --url $(WORKSPACE_URL) --pat $(PAT) --path $(Build.Repository.LocalPath)/model.json
+    displayName: 'Test staging model'
+
+
+# run build phase only on tags
+- job: Build
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  steps:
+  - checkout: self
+    persistCredentials: true
+    clean: true
+
+  - script: |
+      cp $(Build.Repository.LocalPath)/model.json $(Build.ArtifactStagingDirectory)/
+      mkdir -p $(Build.ArtifactStagingDirectory)/ci-cd-scripts
+      cp $(Build.Repository.LocalPath)/ci-cd-scripts/transition-staging-model-to-prod.py $(Build.ArtifactStagingDirectory)/ci-cd-scripts/
+      mkdir -p $(Build.ArtifactStagingDirectory)/notebooks
+      cp $(Build.Repository.LocalPath)/notebooks/* $(Build.ArtifactStagingDirectory)/notebooks/
+    displayName: 'Copy notebooks, model.json, and transition script to common directory'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: '$(Build.Repository.Name)-bundle'
