@@ -16,7 +16,7 @@
 
 # COMMAND ----------
 
-NB_VERSION = 5
+NB_VERSION = "0.8.1"
 
 dbutils.widgets.text("model_name", "", "model_name")
 dbutils.widgets.text("model_version", "", "model_version")
@@ -44,13 +44,13 @@ model_udf = mlflow.pyfunc.spark_udf(spark, f"models:/{model_name}/{model_version
 
 # COMMAND ----------
 
-# MAGIC %md ## Model's stage should be None, if not then we're using the wrong model version
+# MAGIC %md ## Model's stage should be None or Staging, if not then we're using the wrong model version
 
 # COMMAND ----------
 
 current_stage = client.get_model_version(model_name, model_version).current_stage
-if current_stage != "None":
-  raise Exception(f"Bad current stage '{current_stage}' for model version {model_version}. Should be None.")
+if current_stage in ["Production", "Archived"]:
+  raise Exception(f"Bad current stage '{current_stage}' for model version {model_version}. Should be None or Staging.")
 
 # COMMAND ----------
 
