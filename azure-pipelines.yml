@@ -13,27 +13,28 @@ pool:
   vmImage: 'ubuntu-latest'
 
 jobs:
-- job: Unit_Tests
-  steps:
-  - task: UsePythonVersion@0
-    displayName: 'Use Python 3.7'
-    inputs:
-      versionSpec: 3.7
-
-  - checkout: self
-    persistCredentials: true
-    clean: true
-
-  - script: pip install -r requirements.txt
-    displayName: 'Install python dependencies'
-
-  - script: pytest
-    displayName: 'Run Python Unit Tests for library code'
+#- job: Unit_Tests
+#  steps:
+#  - task: UsePythonVersion@0
+#    displayName: 'Use Python 3.7'
+#    inputs:
+#      versionSpec: 3.7
+#
+#  - checkout: self
+#    persistCredentials: true
+#    clean: true
+#
+#  - script: pip install -r requirements.txt
+#    displayName: 'Install python dependencies'
+#
+#  - script: pytest
+#    displayName: 'Run Python Unit Tests for library code'
 
 # run integration tests only when on a Pull Request
 - job: Integration_Tests
-  dependsOn: Unit_Tests
-  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  #dependsOn: Unit_Tests
+  #condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python 3.7'
@@ -63,8 +64,9 @@ jobs:
 
 # run build phase only on tags
 - job: Build
-  dependsOn: Unit_Tests
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  #dependsOn: Unit_Tests
+  #condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python 3.7'
@@ -87,7 +89,7 @@ jobs:
       mkdir -p $(Build.ArtifactStagingDirectory)/notebooks
       mkdir -p $(Build.ArtifactStagingDirectory)/dist
       cp $(Build.Repository.LocalPath)/model.json $(Build.ArtifactStagingDirectory)/
-      cp $(Build.Repository.LocalPath)/ci-cd-scripts/transition-staging-model-to-prod.py $(Build.ArtifactStagingDirectory)/ci-cd-scripts/
+      cp $(Build.Repository.LocalPath)/ci-cd-scripts/* $(Build.ArtifactStagingDirectory)/ci-cd-scripts/
       cp $(Build.Repository.LocalPath)/notebooks/* $(Build.ArtifactStagingDirectory)/notebooks/
       cp $(Build.Repository.LocalPath)/dist/*.* $(Build.ArtifactStagingDirectory)/dist/
     displayName: 'Copy notebooks, model.json, transition script, and wheel to common directory'
