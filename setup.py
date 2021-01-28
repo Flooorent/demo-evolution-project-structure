@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name="demo_evolution_project_structure",
-    version="0.8.1",
+    version="0.9.0",
     author="flo",
     author_email="florent.moiny@databricks.com",
     description="A small example package",
