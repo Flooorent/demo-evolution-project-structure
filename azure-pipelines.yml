@@ -63,19 +63,34 @@ jobs:
 
 # run build phase only on tags
 - job: Build
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  dependsOn: Unit_Tests
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.7'
+    inputs:
+      versionSpec: 3.7
+
   - checkout: self
     persistCredentials: true
     clean: true
 
+  - script: pip install setuptools wheel
+    displayName: 'Install python dependencies to package project'
+
   - script: |
-      cp $(Build.Repository.LocalPath)/model.json $(Build.ArtifactStagingDirectory)/
+      python3 setup.py sdist bdist_wheel
+    displayName: 'Build Python Wheel'
+
+  - script: |
       mkdir -p $(Build.ArtifactStagingDirectory)/ci-cd-scripts
-      cp $(Build.Repository.LocalPath)/ci-cd-scripts/transition-staging-model-to-prod.py $(Build.ArtifactStagingDirectory)/ci-cd-scripts/
       mkdir -p $(Build.ArtifactStagingDirectory)/notebooks
+      mkdir -p $(Build.ArtifactStagingDirectory)/dist
+      cp $(Build.Repository.LocalPath)/model.json $(Build.ArtifactStagingDirectory)/
+      cp $(Build.Repository.LocalPath)/ci-cd-scripts/transition-staging-model-to-prod.py $(Build.ArtifactStagingDirectory)/ci-cd-scripts/
       cp $(Build.Repository.LocalPath)/notebooks/* $(Build.ArtifactStagingDirectory)/notebooks/
-    displayName: 'Copy notebooks, model.json, and transition script to common directory'
+      cp $(Build.Repository.LocalPath)/dist/*.* $(Build.ArtifactStagingDirectory)/dist/
+    displayName: 'Copy notebooks, model.json, transition script, and wheel to common directory'
 
   - task: PublishBuildArtifacts@1
     inputs:
